@@ -171,7 +171,7 @@
             </div>
 
             <div class="chart-section">
-                <div class="chart-title">Distribusi Kelas Sekolah</div>
+                <div class="chart-title">Distribusi Sekolah</div>
                 <div class="badge-grid" id="kelasChart"></div>
             </div>
         </div>
@@ -270,19 +270,21 @@
                     <label>Kelas</label>
                     <select id="inpKelas" class="form-control">
                         <option value="Belum Sekolah">Belum Sekolah</option>
-                        <option value="TK/PAUD">TK/PAUD</option>
-                        <option value="Kelas 1">Kelas 1</option>
-                        <option value="Kelas 2">Kelas 2</option>
-                        <option value="Kelas 3">Kelas 3</option>
-                        <option value="Kelas 4">Kelas 4</option>
-                        <option value="Kelas 5">Kelas 5</option>
-                        <option value="Kelas 6">Kelas 6</option>
-                        <option value="Kelas 7">Kelas 7</option>
-                        <option value="Kelas 8">Kelas 8</option>
-                        <option value="Kelas 9">Kelas 9</option>
-                        <option value="Kelas 10">Kelas 10</option>
-                        <option value="Kelas 11">Kelas 11</option>
-                        <option value="Kelas 12">Kelas 12</option>
+                        <option value="PAUD">PAUD</option>
+                        <option value="TK">TK</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="Mahasiswa">Mahasiswa</option>
                         <option value="S1">S1</option>
                     </select>
                 </div>
@@ -457,7 +459,7 @@
                     </div>`;
             }
 
-            // Render Kelas Badges
+            // Render Badges
             const kDiv = document.getElementById('kelasChart');
             kDiv.innerHTML = '';
             for (const [k, v] of Object.entries(kCount)) {
