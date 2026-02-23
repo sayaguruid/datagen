@@ -71,7 +71,7 @@
         .table-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; vertical-align: top; }
         th { background: #f8fafc; font-weight: 600; color: var(--text-light); white-space: nowrap; }
         tr:hover { background: #f8fafc; }
         
@@ -182,7 +182,7 @@
             <div class="filter-bar">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Cari nama..." onkeyup="applyFilters()">
+                    <input type="text" id="searchInput" placeholder="Cari nama atau orang tua..." onkeyup="applyFilters()">
                 </div>
                 
                 <select id="filterJk" class="filter-select" onchange="applyFilters()">
@@ -214,6 +214,7 @@
                             <tr>
                                 <th>No</th>
                                 <th>Nama</th>
+                                <th>Orang Tua</th> <!-- KOLOM BARU DITAMBAHKAN -->
                                 <th>L/P</th>
                                 <th>Umur</th>
                                 <th>Jenjang</th>
@@ -379,6 +380,7 @@
 
             // Populate Jenjang Select
             const jSelect = document.getElementById('filterJenjang');
+            jSelect.innerHTML = '<option value="">Semua Jenjang</option>'; // Reset first
             jenjangs.forEach(j => {
                 const opt = document.createElement('option');
                 opt.value = j; opt.innerText = j;
@@ -391,6 +393,7 @@
                 document.getElementById('filterKelompok').style.display = 'block';
                 
                 const dSelect = document.getElementById('filterDesa');
+                dSelect.innerHTML = '<option value="">Semua Desa</option>';
                 desas.forEach(d => {
                     const opt = document.createElement('option');
                     opt.value = d; opt.innerText = d;
@@ -398,6 +401,7 @@
                 });
 
                 const kSelect = document.getElementById('filterKelompok');
+                kSelect.innerHTML = '<option value="">Semua Kelompok</option>';
                 kelompoks.forEach(k => {
                     const opt = document.createElement('option');
                     opt.value = k; opt.innerText = k;
@@ -406,6 +410,7 @@
             } else if (currentUser.role === 'desa') {
                 document.getElementById('filterKelompok').style.display = 'block';
                 const kSelect = document.getElementById('filterKelompok');
+                kSelect.innerHTML = '<option value="">Semua Kelompok</option>';
                 kelompoks.forEach(k => {
                     const opt = document.createElement('option');
                     opt.value = k; opt.innerText = k;
@@ -469,7 +474,11 @@
             const fKelompok = document.getElementById('filterKelompok').value;
 
             filteredData = allData.filter(d => {
-                const matchSearch = d.nama.toLowerCase().includes(search) || (d.ayah && d.ayah.toLowerCase().includes(search));
+                // Search in Name, Ayah, or Ibu
+                const matchSearch = d.nama.toLowerCase().includes(search) || 
+                                    (d.ayah && d.ayah.toLowerCase().includes(search)) || 
+                                    (d.ibu && d.ibu.toLowerCase().includes(search));
+                
                 const matchJk = fJk ? d.jk === fJk : true;
                 const matchJenjang = fJenjang ? d.jenjang === fJenjang : true;
                 const matchDesa = fDesa ? d.desa === fDesa : true;
@@ -491,13 +500,27 @@
             const end = start + rowsPerPage;
             const pageData = filteredData.slice(start, end);
 
+            // Hitung jumlah kolom (No, Nama, Ortu, L/P, Umur, Jenjang, Kelas, Lokasi, Aksi)
+            // Jika role kelompok = 9 kolom, selain itu 8 kolom
+            const colCount = currentUser.role === 'kelompok' ? 9 : 8;
+
             if (pageData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">Tidak ada data</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding:20px;">Tidak ada data</td></tr>`;
+                return;
             }
 
             pageData.forEach(d => {
                 let locText = d.kelompok;
                 if(currentUser.role !== 'kelompok' && d.desa) locText += `, ${d.desa}`;
+
+                // Format Orang Tua
+                let ortuHtml = '-';
+                if(d.ayah || d.ibu) {
+                    ortuHtml = `<small style="color:#64748b; line-height:1.4;">`;
+                    if(d.ayah) ortuHtml += `A: ${d.ayah}<br>`;
+                    if(d.ibu) ortuHtml += `I: ${d.ibu}`;
+                    ortuHtml += `</small>`;
+                }
 
                 let action = '';
                 if(currentUser.role === 'kelompok') {
@@ -511,6 +534,7 @@
                 tr.innerHTML = `
                     <td>${d.no}</td>
                     <td><b>${d.nama}</b></td>
+                    <td>${ortuHtml}</td>
                     <td><span style="color:${d.jk==='L'?'#2563eb':'#db2777'}; font-weight:600;">${d.jk}</span></td>
                     <td>${d.umur}</td>
                     <td><span style="background:#eff6ff; color:#1e40af; padding:2px 8px; border-radius:4px; font-size:0.75rem;">${d.jenjang}</span></td>
