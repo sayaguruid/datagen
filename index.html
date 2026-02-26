@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Data Gen</title>
+    <title>Sistem Generus Modern</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Icon Library -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -21,14 +21,59 @@
         body { background-color: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 80px; }
         
         /* LOGIN */
-        #login-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: white; width: 100%; max-width: 380px; padding: 30px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        #login-view { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); 
+            z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; 
+            transition: opacity 0.5s ease-out;
+        }
+        /* Class untuk menyembunyikan login dengan transisi */
+        #login-view.fade-out { opacity: 0; pointer-events: none; }
+
+        .login-card { 
+            background: white; width: 100%; max-width: 380px; padding: 30px; 
+            border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+            /* Transisi untuk animasi getar */
+            transition: transform 0.3s;
+        }
+        
+        /* Animasi Getar (Shake) untuk Error */
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
         .form-control { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; transition: 0.2s; }
         .form-control:focus { border-color: var(--primary); outline: none; ring: 2px var(--primary); }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; background: var(--primary); color: white; font-weight: 600; cursor: pointer; font-size: 1rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        .btn { 
+            width: 100%; padding: 12px; border: none; border-radius: 10px; 
+            background: var(--primary); color: white; font-weight: 600; 
+            cursor: pointer; font-size: 1rem; transition: 0.2s; 
+            display: flex; align-items: center; justify-content: center; gap: 8px; 
+            position: relative; 
+        }
         .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* Loading Spinner CSS */
+        .spinner {
+            display: none;
+            width: 16px; height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .btn.loading .spinner { display: block; }
+        .btn.loading i { display: none; } /* Sembunyikan icon login saat loading */
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         /* Tombol Kecil (Header) */
         .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; }
@@ -118,7 +163,7 @@
             border-radius: var(--radius);
             margin-bottom: 20px;
             box-shadow: var(--shadow);
-            display: none; /* Hidden by default */
+            display: none; 
             align-items: center;
             gap: 10px;
         }
@@ -133,9 +178,12 @@
 
     <!-- LOGIN VIEW -->
     <div id="login-view">
-        <div class="login-card">
-            <h2 style="text-align:center; color:var(--primary); margin-bottom:25px;">Login Generus</h2>
-            <div id="loginMsg" style="color:var(--danger); font-size:0.85rem; text-align:center; margin-bottom:15px; min-height:20px;"></div>
+        <div class="login-card" id="loginCard">
+            <h2 style="text-align:center; color:var(--primary); margin-bottom:25px;">Generus</h2>
+            
+            <!-- Pesan Error/Peringatan -->
+            <div id="loginMsg" style="color:var(--danger); font-size:0.9rem; text-align:center; margin-bottom:15px; min-height:20px; font-weight:600; background:#fef2f2; padding:8px; border-radius:6px; border:1px solid #fee2e2; display:none;"></div>
+            
             <form onsubmit="event.preventDefault(); doLogin();">
                 <div class="form-group">
                     <label>Username</label>
@@ -145,8 +193,12 @@
                     <label>Password</label>
                     <input type="password" id="p" class="form-control" required>
                 </div>
-                <button type="submit" class="btn">
-                    <i class="fas fa-sign-in-alt"></i> Masuk
+                
+                <!-- Tombol Login dengan ID untuk manipulasi JS -->
+                <button id="btnLogin" type="submit" class="btn">
+                    <i class="fas fa-sign-in-alt"></i> 
+                    <span class="btnText">Masuk</span>
+                    <div class="spinner"></div>
                 </button>
             </form>
         </div>
@@ -174,12 +226,10 @@
 
         <!-- TAB 1: STATISTIK -->
         <div id="tab-stats" class="container">
-            <!-- Filter Khusus Statistik -->
             <div id="statsFilterContainer">
                 <label for="statsFilterSelect">Filter:</label>
                 <select id="statsFilterSelect" class="filter-select" onchange="renderStats()">
                     <option value="all">Semua Data</option>
-                    <!-- Diisi via JS -->
                 </select>
             </div>
 
@@ -211,7 +261,6 @@
 
         <!-- TAB 2: DATA -->
         <div id="tab-data" class="container" style="display:none;">
-            <!-- Filters -->
             <div class="filter-bar">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
@@ -226,10 +275,8 @@
 
                 <select id="filterJenjang" class="filter-select" onchange="applyFilters()">
                     <option value="">Semua Jenjang</option>
-                    <!-- Populated via JS -->
                 </select>
 
-                <!-- Dynamic Filters based on Role -->
                 <select id="filterDesa" class="filter-select" onchange="applyFilters()" style="display:none;">
                     <option value="">Semua Desa</option>
                 </select>
@@ -239,7 +286,6 @@
                 </select>
             </div>
 
-            <!-- Table -->
             <div class="table-card">
                 <div class="table-responsive">
                     <table id="dataTable">
@@ -267,7 +313,6 @@
             </div>
         </div>
 
-        <!-- FAB Add Button (Only for Kelompok) -->
         <div id="fabAdd" class="fab" style="display:none;" onclick="openModal()">
             <i class="fas fa-plus"></i>
         </div>
@@ -297,7 +342,6 @@
                     </div>
                 </div>
 
-                <!-- Kolom Tempat & Tanggal Lahir Diperbaiki -->
                 <div class="grid-2">
                     <div class="form-group">
                         <label>Tempat Lahir</label>
@@ -382,27 +426,74 @@
             }
         }
 
-        // --- LOGIN ---
+        // --- LOGIN (WITH ANIMATIONS) ---
         async function doLogin() {
+            const btn = document.getElementById('btnLogin');
+            const btnText = btn.querySelector('.btnText');
+            const card = document.getElementById('loginCard');
+            const msg = document.getElementById('loginMsg');
             const u = document.getElementById('u').value;
             const p = document.getElementById('p').value;
-            const res = await callApi('login', { username: u, password: p });
-            
-            if (res.success) {
-                currentUser = { role: res.role, lokasi: res.lokasi, desa: res.desa };
-                document.getElementById('login-view').style.display = 'none';
-                document.getElementById('app-view').style.display = 'block';
+
+            // 1. Set State Loading
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btnText.innerText = "Masuk...";
+            msg.style.display = 'none'; // Sembunyikan pesan error lama
+            card.classList.remove('shake'); // Hapus animasi getar jika ada
+
+            try {
+                const res = await callApi('login', { username: u, password: p });
                 
-                let info = `${currentUser.role} - ${currentUser.lokasi}`;
-                if(currentUser.role === 'kelompok') info += ` (${currentUser.desa})`;
-                document.getElementById('userInfo').innerText = info;
+                if (res.success) {
+                    // 2. Sukses Login
+                    currentUser = { role: res.role, lokasi: res.lokasi, desa: res.desa };
+                    
+                    // Efek Fade Out Login View
+                    document.getElementById('login-view').classList.add('fade-out');
+                    
+                    // Tunggu animasi selesai, baru pindah view
+                    setTimeout(() => {
+                        document.getElementById('login-view').style.display = 'none';
+                        document.getElementById('app-view').style.display = 'block';
+                        
+                        let info = `${currentUser.role} - ${currentUser.lokasi}`;
+                        if(currentUser.role === 'kelompok') info += ` (${currentUser.desa})`;
+                        document.getElementById('userInfo').innerText = info;
 
-                if (currentUser.role === 'kelompok') document.getElementById('fabAdd').style.display = 'flex';
-                if (currentUser.role === 'kelompok') document.getElementById('thAction').style.display = 'table-cell';
+                        if (currentUser.role === 'kelompok') document.getElementById('fabAdd').style.display = 'flex';
+                        if (currentUser.role === 'kelompok') document.getElementById('thAction').style.display = 'table-cell';
 
-                initApp();
-            } else {
-                document.getElementById('loginMsg').innerText = res.message;
+                        initApp();
+                    }, 500);
+
+                } else {
+                    // 3. Gagal Login (Salah Password/User)
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    btnText.innerText = "Masuk";
+                    
+                    // Tampilkan Pesan Error
+                    msg.innerText = "Username atau Password salah!";
+                    msg.style.display = 'block';
+                    
+                    // Trigger Animasi Shake (Getar)
+                    card.classList.add('shake');
+                    // Hapus class shake setelah animasi selesai agar bisa dipanggil lagi nanti
+                    setTimeout(() => {
+                        card.classList.remove('shake');
+                    }, 500);
+                }
+            } catch (error) {
+                // 4. Error Koneksi
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                btnText.innerText = "Masuk";
+                
+                msg.innerText = "Terjadi kesalahan koneksi.";
+                msg.style.display = 'block';
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 500);
             }
         }
 
@@ -411,21 +502,14 @@
             const res = await callApi('getData', { role: currentUser.role, lokasi: currentUser.lokasi });
             allData = res.data || [];
             
-            // Populate Dynamic Filters (Jenjang, Desa, Kelompok)
             populateFilters();
-            
-            // Populate Parent Autocomplete
             populateParentLists();
-
-            // Populate Stats Filter Container
             populateStatsFilter();
 
-            // Initial Render
             applyFilters();
             renderStats();
         }
 
-        // Populate Data Table Filters
         function populateFilters() {
             const jenjangs = [...new Set(allData.map(d => d.jenjang))].sort();
             const desas = [...new Set(allData.map(d => d.desa))].sort();
@@ -470,7 +554,6 @@
             }
         }
 
-        // Populate Stats Filter (Daerah -> Desa, Desa -> Kelompok)
         function populateStatsFilter() {
             const container = document.getElementById('statsFilterContainer');
             const select = document.getElementById('statsFilterSelect');
@@ -497,7 +580,6 @@
             }
         }
 
-        // Populate Parent Autocomplete (Based on User Scope)
         function populateParentLists() {
             const listAyah = document.getElementById('listAyah');
             const listIbu = document.getElementById('listIbu');
@@ -518,7 +600,6 @@
             ibus.forEach(name => listIbu.innerHTML += `<option value="${name}">`);
         }
 
-        // --- EXCEL DOWNLOAD ---
         function downloadExcel() {
             if (allData.length === 0) {
                 alert("Tidak ada data untuk diunduh.");
@@ -547,7 +628,6 @@
             XLSX.writeFile(wb, `Data_Generus_${date}.xlsx`);
         }
 
-        // --- TABS ---
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-btn')[tab === 'stats' ? 0 : 1].classList.add('active');
@@ -556,7 +636,6 @@
             document.getElementById('tab-data').style.display = tab === 'data' ? 'block' : 'none';
         }
 
-        // --- STATS LOGIC ---
         function renderStats() {
             let dataToProcess = allData;
             const filterVal = document.getElementById('statsFilterSelect').value;
@@ -600,7 +679,6 @@
             }
         }
 
-        // --- FILTER & SEARCH ---
         function applyFilters() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const fJk = document.getElementById('filterJk').value;
@@ -625,7 +703,6 @@
             renderTable();
         }
 
-        // --- TABLE & PAGINATION ---
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
@@ -689,7 +766,6 @@
             }
         }
 
-        // --- CRUD ---
         function openModal() {
             document.getElementById('modal').style.display = 'flex';
             document.querySelector('form').reset();
@@ -709,16 +785,13 @@
             document.getElementById('inpNama').value = item.nama;
             document.getElementById('inpJk').value = item.jk;
             
-            // Parsing TTL "Tempat, DD/MM/YYYY"
             try {
                 const ttlParts = item.ttl.split(', ');
                 if (ttlParts.length >= 2) {
-                    document.getElementById('inpTempatLahir').value = ttlParts[0]; // Mengambil Tempat Lahir
-                    
+                    document.getElementById('inpTempatLahir').value = ttlParts[0];
                     const dateParts = ttlParts[1].split('/');
                     document.getElementById('inpTgl').value = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
                 } else if (ttlParts.length === 1) {
-                    // Hanya tanggal tanpa tempat
                      document.getElementById('inpTgl').value = ttlParts[0];
                 }
             } catch(e){
@@ -738,7 +811,6 @@
                 no: allData.length + 1,
                 nama: document.getElementById('inpNama').value,
                 jk: document.getElementById('inpJk').value,
-                // Mengambil dari input Tempat Lahir, bukan hardcoded
                 tempatLahir: document.getElementById('inpTempatLahir').value, 
                 tanggalLahir: document.getElementById('inpTgl').value,
                 kelas: document.getElementById('inpKelas').value,
