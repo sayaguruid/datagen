@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sistem Generus Modern</title>
+    <title>Data Gen</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Icon Library -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -286,6 +286,7 @@
                     <label>Nama Lengkap</label>
                     <input type="text" id="inpNama" class="form-control" required>
                 </div>
+                
                 <div class="grid-2">
                     <div class="form-group">
                         <label>JK</label>
@@ -294,11 +295,20 @@
                             <option value="P">Perempuan</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- Kolom Tempat & Tanggal Lahir Diperbaiki -->
+                <div class="grid-2">
                     <div class="form-group">
-                        <label>Tgl Lahir</label>
+                        <label>Tempat Lahir</label>
+                        <input type="text" id="inpTempatLahir" class="form-control" placeholder="Contoh: Garut" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Lahir</label>
                         <input type="date" id="inpTgl" class="form-control" required>
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label>Kelas</label>
                     <select id="inpKelas" class="form-control">
@@ -494,14 +504,12 @@
             listAyah.innerHTML = '';
             listIbu.innerHTML = '';
 
-            // Filter data based on scope
             let sourceData = allData;
             if (currentUser.role === 'kelompok') {
                 sourceData = allData.filter(d => d.kelompok === currentUser.lokasi);
             } else if (currentUser.role === 'desa') {
                 sourceData = allData.filter(d => d.desa === currentUser.lokasi);
             }
-            // Daerah sees all
 
             const ayahs = [...new Set(sourceData.map(d => d.ayah).filter(n => n))];
             const ibus = [...new Set(sourceData.map(d => d.ibu).filter(n => n))];
@@ -517,7 +525,6 @@
                 return;
             }
 
-            // Siapkan data agar lebih rapi di Excel
             const dataToExport = allData.map((d, index) => ({
                 "No": d.no || index + 1,
                 "Nama Lengkap": d.nama,
@@ -536,7 +543,6 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Data Generus");
             
-            // Nama file dengan timestamp
             const date = new Date().toISOString().slice(0,10);
             XLSX.writeFile(wb, `Data_Generus_${date}.xlsx`);
         }
@@ -555,7 +561,6 @@
             let dataToProcess = allData;
             const filterVal = document.getElementById('statsFilterSelect').value;
 
-            // Terapkan Filter Statistik
             if (currentUser.role === 'daerah' && filterVal !== 'all') {
                 dataToProcess = allData.filter(d => d.desa === filterVal);
             } else if (currentUser.role === 'desa' && filterVal !== 'all') {
@@ -577,7 +582,6 @@
             document.getElementById('sL').innerText = l;
             document.getElementById('sP').innerText = p;
 
-            // Render Jenjang Progress
             const jDiv = document.getElementById('jenjangChart');
             jDiv.innerHTML = '';
             for (const [k, v] of Object.entries(jCount)) {
@@ -589,7 +593,6 @@
                     </div>`;
             }
 
-            // Render Badges
             const kDiv = document.getElementById('kelasChart');
             kDiv.innerHTML = '';
             for (const [k, v] of Object.entries(kCount)) {
@@ -705,10 +708,23 @@
             document.getElementById('inpRowIndex').value = item.rowIndex;
             document.getElementById('inpNama').value = item.nama;
             document.getElementById('inpJk').value = item.jk;
+            
+            // Parsing TTL "Tempat, DD/MM/YYYY"
             try {
-                const parts = item.ttl.split(', ')[1].split('/');
-                document.getElementById('inpTgl').value = `${parts[2]}-${parts[1]}-${parts[0]}`;
-            } catch(e){}
+                const ttlParts = item.ttl.split(', ');
+                if (ttlParts.length >= 2) {
+                    document.getElementById('inpTempatLahir').value = ttlParts[0]; // Mengambil Tempat Lahir
+                    
+                    const dateParts = ttlParts[1].split('/');
+                    document.getElementById('inpTgl').value = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+                } else if (ttlParts.length === 1) {
+                    // Hanya tanggal tanpa tempat
+                     document.getElementById('inpTgl').value = ttlParts[0];
+                }
+            } catch(e){
+                console.error("Gagal memparsing TTL", e);
+            }
+
             document.getElementById('inpKelas').value = item.kelas;
             document.getElementById('inpAyah').value = item.ayah;
             document.getElementById('inpIbu').value = item.ibu;
@@ -722,8 +738,9 @@
                 no: allData.length + 1,
                 nama: document.getElementById('inpNama').value,
                 jk: document.getElementById('inpJk').value,
+                // Mengambil dari input Tempat Lahir, bukan hardcoded
+                tempatLahir: document.getElementById('inpTempatLahir').value, 
                 tanggalLahir: document.getElementById('inpTgl').value,
-                tempatLahir: "Garut",
                 kelas: document.getElementById('inpKelas').value,
                 ayah: document.getElementById('inpAyah').value,
                 ibu: document.getElementById('inpIbu').value,
@@ -735,7 +752,7 @@
             if (res.status === 'success') {
                 alert(res.message);
                 closeModal();
-                initApp(); // Reload all to update filters and autocomplete
+                initApp(); 
             }
         }
 
